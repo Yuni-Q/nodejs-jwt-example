@@ -46,21 +46,32 @@ exports.keywords = async (req, res) => {
   console.log(keywords);
   b = {};
 
-  await Keyword.aggregate([{ $unwind: "$keywords" }]).then(k => {
-    let a = [];
-    k.forEach(element => {
-      if (element.keywords.includes(keywords)) {
-        console.log("aaa", element);
-        a.push(element);
+  c = await Keyword.aggregate([
+    { $unwind: "$keywords" },
+    { $match: { keywords: keywords } },
+    {
+      $group: {
+        _id: { start: "$start", keywords: "$keywords" },
+        count: { $sum: 1 }
       }
-    });
-    console.log(a);
-    a = _.groupBy(a, "start");
-
-    for (const key of Object.keys(a)) {
-      b[key] = a[key].length;
     }
-  });
+  ]);
+  //.then(k => {
+  //   let a = [];
+  //   k.forEach(element => {
+  //     console.log(element);
+  //     if (element.keywords.includes(keywords)) {
+  //       a.push(element);
+  //     }
+  //   });
+  //   console.log(a);
+  //   a = _.groupBy(a, "start");
 
-  res.send(b);
+  //   for (const key of Object.keys(a)) {
+  //     b[key] = a[key].length;
+  //   }
+  // });
+
+  // res.send(b);
+  res.send(c);
 };
