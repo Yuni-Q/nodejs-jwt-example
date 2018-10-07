@@ -41,10 +41,9 @@ exports.register = (req, res) => {
   res.json(newKeyword);
 };
 
-exports.keywords = async (req, res) => {
+exports.keywords = async (req, res, next) => {
   const keywords = req.query.keywords;
   console.log(keywords);
-  b = {};
 
   c = await Keyword.aggregate([
     { $unwind: "$keywords" },
@@ -55,7 +54,13 @@ exports.keywords = async (req, res) => {
         count: { $sum: 1 }
       }
     }
-  ]);
+  ])
+    .then(result => {
+      res.send(result);
+    })
+    .catch(err => {
+      next(err);
+    });
   //.then(k => {
   //   let a = [];
   //   k.forEach(element => {
@@ -73,5 +78,5 @@ exports.keywords = async (req, res) => {
   // });
 
   // res.send(b);
-  res.send(c);
+  // res.send(c);
 };
